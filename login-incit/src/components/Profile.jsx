@@ -1,8 +1,57 @@
-import React from 'react';
 import useAuth from '../hooks/useAuth';
+import { Button } from 'flowbite-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useRef, useState } from "react";
+import axiosPrivate from '../api/axios';
+import axios from '../api/axios';
+
+const EDIT_URL = '/profile/edit-name'
 
 const Profile = () => {
     const { auth } = useAuth();
+    const navigate = useNavigate();
+    const errRef = useRef();
+    const email = auth.user_email;
+    // let isMounted = true;
+    const controller = new AbortController();
+
+    const [name, setName] = useState('');
+    const [errMsg, setErrMsg] = useState('');
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.patch(EDIT_URL,
+                JSON.stringify({ name, email: auth.user_email }),
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${auth.accessToken}`,
+                    },
+                    withCredentials: true
+                }
+            );
+            setName('');
+            console.log(response);
+            navigate(0);
+        } catch (err) {
+            if (!err?.response) {
+                console.log(err);
+                setErrMsg('No Server Response');
+            } else if (err.response?.status === 400) {
+                setErrMsg('Missing Username or Password');
+            } else if (err.response?.status === 401) {
+                setErrMsg('Unauthorized');
+            } else {
+                setErrMsg('Login Failed');
+            }
+            errRef.current.focus();
+        }
+    }
+
+
+
     return (
         <section className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center">
             <main className="w-full max-w-4xl px-6 py-8">
@@ -21,11 +70,36 @@ const Profile = () => {
                             </h2>
                             <form className="mt-4 space-y-4 lg:mt-5 md:space-y-5">
                                 <div>
-                                    <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Change Name</label>
-                                    <input type="email" name="email" id="email" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder={auth.name} required="" />
+                                    <p ref={errRef} className={`my-2 p-2 text-red-600 ${errMsg ? "block" : "hidden"}`} aria-live="assertive">{errMsg}</p>
+                                    <label
+                                        htmlFor="username"
+                                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                    >
+                                        Change Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="username"
+                                        id="username"
+                                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        placeholder={auth.name}
+                                        autoComplete='off'
+                                        onChange={(e) => setName(e.target.value)}
+                                        value={name}
+                                    />
                                 </div>
-                                <button type="submit" className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Reset password</button>
+                                <Button
+                                    gradientDuoTone="purpleToPink"
+                                    className="w-full"
+                                    onClick={handleSubmit}
+                                >
+                                    Confirm
+                                </Button>
                             </form>
+                            <div className="grid justify-items-center mt-4">
+                                <p className="text-sm font-light text-gray-500 dark:text-gray-400">Or</p>
+                            </div>
+                            <button className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"> <Link to="/change-password">Change Password</Link></button>
                         </div>
                     </div>
                 </div>

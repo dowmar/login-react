@@ -110,3 +110,36 @@ export const updateEmailToken = async (email) => {
     client.release();
   }
 };
+
+export const insertUserLogging = async (email, status) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await client.query(
+      "INSERT INTO user_log (email, status) VALUES ($1, $2) RETURNING *",
+      [email, status]
+    );
+    await client.query("COMMIT");
+    return result.rowCount;
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
+export const getAllLogging = async () => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await pool.query("SELECT * FROM user_log");
+    await client.query("COMMIT");
+    return result.rows;
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+};

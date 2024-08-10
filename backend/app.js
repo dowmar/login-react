@@ -6,6 +6,8 @@ import orderRoutes from "./routes/orderRoutes.js";
 import registerRoutes from "./routes/registerRoutes.js";
 import authRoutes from "./routes/auth.js";
 import refreshRoutes from "./routes/refresh.js";
+import profileRoutes from "./routes/profileRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 import logoutRoutes from "./routes/logout.js";
 import corsOptions from "./config/corsOption.js";
 
@@ -31,5 +33,7 @@ app.use(verifyJWT);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/foods", foodRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 export default app;

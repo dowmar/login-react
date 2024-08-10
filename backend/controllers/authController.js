@@ -1,7 +1,7 @@
 import {
-  registerUser,
   checkDuplicateUser,
   insertToken,
+  insertUserLoggings,
 } from "../services/registerService.js";
 
 import bcrypt from "bcrypt";
@@ -30,12 +30,10 @@ export const handleLogin = async (req, res) => {
   // }
   const foundUser = await checkDuplicateUser(email);
   if (!foundUser.length)
-    return res.status(401).json({ message: "User not found" }); //Unauthorized
+    return res.status(401).json({ message: "User not registered" }); //Unauthorized
   // evaluate password
   console.log(foundUser[0]);
   const match = await bcrypt.compare(pwd, foundUser[0].pwd);
-
-  console.log("apakah match", match);
 
   const account = {
     name: foundUser[0].name,
@@ -77,6 +75,12 @@ export const handleLogin = async (req, res) => {
     });
     // TODO create roles
     const roles = ["user", "admin"];
+
+    // Add logging
+    const addLogging = await insertUserLoggings(email, "login");
+    if (addLogging) {
+      console.log("log added", addLogging);
+    }
     res.json({
       accessToken,
       roles,

@@ -12,13 +12,13 @@ const Header = () => {
 
     const signOut = async () => {
         await logout();
-        navigate('/linkpage');
+        navigate('/login');
     }
     return (
         <header className="z-50">
             <nav className="bg-white border-gray-200 px-2 lg:px-6 py-2.5 dark:bg-gray-800">
                 <div className="flex flex-wrap justify-between items-center">
-                    <a href="https://flowbite.com" className="flex items-center">
+                    <a href="/" className="flex items-center">
                         <img src={logo} className="mr-3 h-6 sm:h-9" alt="Flowbite Logo" />
                         <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">The App</span>
                     </a>

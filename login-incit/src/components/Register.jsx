@@ -1,5 +1,4 @@
 import { ImFacebook2 } from "react-icons/im";
-import { FcGoogle } from "react-icons/fc";
 import { Button } from "flowbite-react";
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import logo from '../assets/logo-birb.png';
@@ -8,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useRef, useState } from "react";
 import axios from '../api/axios';
 import { Link } from "react-router-dom";
-import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import GoogleLogin from "./GoogleLogin";
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
@@ -133,38 +132,6 @@ const Register = () => {
             return error
         }
     };
-
-    // const login = useGoogleLogin({
-    //     onSuccess: async (tokenResponse) => {
-    //         try {
-    //             // Use the tokenResponse to get user info
-    //             const userInfo = await axios.get(
-    //                 "https://www.googleapis.com/oauth2/v3/userinfo",
-    //                 {
-    //                     headers: {
-    //                         Authorization: `Bearer ${tokenResponse.access_token}`,
-    //                     },
-    //                 }
-    //             );
-    //             console.log(userInfo.data); // Handle the user info here
-    //         } catch (error) {
-    //             console.error("Failed to fetch user info:", error);
-    //         }
-    //     },
-    //     onError: () => {
-    //         console.log("Login Failed");
-    //     },
-    // });
-    // const login = useGoogleLogin({
-    //     onSuccess: async (tokenResponse) => {
-    //         console.log(tokenResponse);
-    //         // Handle the login success, possibly fetch user info here
-    //     },
-    //     onError: () => {
-    //         console.log("Login Failed");
-    //     },
-    // });
-
 
     return (
         <>
@@ -379,7 +346,7 @@ const Register = () => {
                                     </div>
                                     <div className="flex space-x-1">
                                         <FacebookLogin
-                                            appId=""  // Your Facebook App ID
+                                            appId="3780468242231803"  // Your Facebook App ID
                                             autoLoad={false}
                                             fields="name,email,picture"
                                             callback={handleFacebookCallback}
@@ -387,7 +354,7 @@ const Register = () => {
                                                 <Button onClick={renderProps.onClick} color="light" className="w-1/2"><ImFacebook2 className="mr-2 h-5 w-5" />Facebook</Button>
                                             )}
                                         />
-                                        <GoogleOAuthProvider clientId="">
+                                        <GoogleOAuthProvider clientId="459717985549-ei6f7tsenkqn6s70vec363n84ggd2ph2.apps.googleusercontent.com">
                                             <GoogleLogin />
                                         </GoogleOAuthProvider>
 

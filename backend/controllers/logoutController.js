@@ -1,6 +1,7 @@
 import {
   findUserByRefresh,
   deleteRefreshToken,
+  insertUserLoggings,
 } from "../services/registerService.js";
 
 import jwt from "jsonwebtoken";
@@ -33,7 +34,12 @@ export const handleLogout = async (req, res) => {
   }
 
   // delete refresh token
-  const removeToken = deleteRefreshToken(refreshToken);
+  const removeToken = await deleteRefreshToken(refreshToken);
+
+  const addLogging = await insertUserLoggings(userByToken[0].email, "logout");
+  if (addLogging) {
+    console.log("log added", addLogging);
+  }
 
   if (removeToken > 0)
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true }); //secure: true - for production

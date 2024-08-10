@@ -5,10 +5,11 @@ import axios from '../api/axios';
 import useInput from '../hooks/useInput.jsx';
 import useToggle from '../hooks/useToggle.jsx';
 import logo from '../assets/logo-birb.png';
-import { Button } from 'flowbite-react';
+import { Alert, Button } from 'flowbite-react';
 import { ImFacebook2 } from "react-icons/im";
 import { FcGoogle } from "react-icons/fc";
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import { HiInformationCircle } from "react-icons/hi";
 
 const LOGIN_URL = '/auth';
 
@@ -25,6 +26,7 @@ const Login = () => {
     const [pwd, setPwd] = useState('');
     const [errMsg, setErrMsg] = useState('');
     const [check, toggleCheck] = useToggle('persist', false);
+    const [showAlert, setShowAlert] = useState(true);
 
     useEffect(() => {
         userRef.current.focus();
@@ -44,8 +46,6 @@ const Login = () => {
                     withCredentials: true
                 }
             );
-            // const accessToken = response?.data?.accessToken;
-            // const roles = response?.data?.roles;
             const accessToken = response?.data?.accessToken;
             const roles = response?.data?.roles;
             const user_email = response?.data?.email;
@@ -53,7 +53,7 @@ const Login = () => {
             const verify_status = response?.data?.verify_status;
             const login_type = response?.data?.login_type;
             setAuth({ user_email, pwd, roles, accessToken, name, verify_status, login_type });
-            // setAuth({ email, pwd, roles, accessToken });
+
             reset();
             setPwd('');
             navigate(from, { replace: true });
@@ -64,7 +64,7 @@ const Login = () => {
             } else if (err.response?.status === 400) {
                 setErrMsg('Missing Username or Password');
             } else if (err.response?.status === 401) {
-                setErrMsg('Unauthorized');
+                setErrMsg(err.response.data.message || 'Unauthorized');
             } else {
                 setErrMsg('Login Failed');
             }
@@ -80,6 +80,10 @@ const Login = () => {
         console.log(response);
     };
 
+    const handleDismiss = () => {
+        setShowAlert(false);
+    };
+
 
 
     return (
@@ -91,7 +95,18 @@ const Login = () => {
                 </a>
                 <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                     <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-                        <p ref={errRef} className={errMsg ? "errmsg" : "offscreen"} aria-live="assertive">{errMsg}</p>
+                        {showAlert && (
+                            <Alert
+                                ref={errRef}
+                                color="failure"
+                                icon={HiInformationCircle}
+                                onDismiss={handleDismiss}
+                                rounded
+                                className={`${errMsg ? "block" : "hidden"} my-2 p-2`}
+                            >
+                                <span className="font-medium">{errMsg}</span>
+                            </Alert>
+                        )}
                         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                             Login
                         </h1>
@@ -147,7 +162,7 @@ const Login = () => {
                                 Sign In
                             </Button>
                             <div className="grid justify-items-center">
-                                <p className="text-sm font-light text-gray-500 dark:text-gray-400">Or Sign up with :</p>
+                                <p className="text-sm font-light text-gray-500 dark:text-gray-400">Or Login with :</p>
                             </div>
                             <div className="flex space-x-1">
                                 <FacebookLogin

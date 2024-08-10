@@ -6,6 +6,8 @@ import {
   deleteRefreshTokenByToken,
   findEmailToken,
   updateEmailToken,
+  insertUserLogging,
+  getAllLogging,
 } from "../models/register.js";
 
 export const registerUser = async (
@@ -42,4 +44,12 @@ export const checkEmailToken = async (emailToken) => {
 };
 export const updateEmailTokens = async (email) => {
   return await updateEmailToken(email);
+};
+
+export const insertUserLoggings = async (email, status) => {
+  return await insertUserLogging(email, status);
+};
+
+export const getAllLoggings = async () => {
+  return getAllLogging();
 };
