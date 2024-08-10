@@ -19,14 +19,15 @@ export const insertUser = async (
   email,
   login_type,
   emailToken,
-  img
+  img,
+  verify_status
 ) => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     const result = await client.query(
-      "INSERT INTO users (name, pwd, email, login_type, email_token, img) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-      [name, pwd, email, login_type, emailToken, img]
+      "INSERT INTO users (name, pwd, email, login_type, email_token, img, verify_status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+      [name, pwd, email, login_type, emailToken, img, verify_status]
     );
     await client.query("COMMIT");
     return result.rows[0];

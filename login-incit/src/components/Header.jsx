@@ -29,9 +29,6 @@ const Header = () => {
                             <Dropdown
                                 label={
                                     <Avatar alt="User settings" placeholder rounded className="mr-4">
-                                        {/* <div className="space-y-1 font-medium dark:text-white mr-2">
-                                            <div>{auth?.name}</div>
-                                        </div> */}
                                     </Avatar>
                                 }
                                 arrowIcon={false}
@@ -42,7 +39,13 @@ const Header = () => {
                                     <span className="block text-sm">{auth?.name}</span>
                                     <span className="block truncate text-sm font-medium">{auth.user_email}</span>
                                 </Dropdown.Header>
-                                <Dropdown.Item><Link to="/profile">Edit Profile</Link></Dropdown.Item>
+                                <Dropdown.Item>
+                                    <Link to="/profile">Edit Profile</Link>
+                                </Dropdown.Item>
+                                {auth.login_type === "email_auth" ? <Dropdown.Item>
+                                    <Link to="/change-password">Change Password</Link>
+                                </Dropdown.Item> : <div></div>}
+
                                 <Dropdown.Divider />
                                 <Dropdown.Item onClick={signOut}>Sign out</Dropdown.Item>
                             </Dropdown>

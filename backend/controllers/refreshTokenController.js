@@ -39,6 +39,7 @@ export const handleRefreshToken = async (req, res) => {
     login_type: foundUser[0].login_type,
     verify_status: foundUser[0].verify_status || "",
     img: foundUser[0].img || "",
+    emailToken: foundUser[0].email_token || "",
   };
 
   // evaluate password
@@ -54,7 +55,7 @@ export const handleRefreshToken = async (req, res) => {
       const accessToken = jwt.sign(
         { email: decoded.email },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "300s" }
+        { expiresIn: "10s" }
       );
       res.json({
         accessToken,
@@ -64,6 +65,7 @@ export const handleRefreshToken = async (req, res) => {
         verify_status: account.verify_status,
         img: account.img,
         login_type: account.login_type,
+        emailToken: account.emailToken,
       });
     }
   );

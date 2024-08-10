@@ -1,6 +1,6 @@
 import createMailTransporter from "./createMailTransporter.js";
 
-const sendVerificationMail = (account) => {
+const sendVerificationMail = async (account) => {
   const transporter = createMailTransporter();
 
   ///crypto.randomBytes(64).toString("hex");

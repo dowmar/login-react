@@ -1,8 +1,5 @@
 import express from "express";
 import cors from "cors";
-import categoryRoutes from "./routes/categoryRoutes.js";
-import foodRoutes from "./routes/foodRoutes.js";
-import orderRoutes from "./routes/orderRoutes.js";
 import registerRoutes from "./routes/registerRoutes.js";
 import authRoutes from "./routes/auth.js";
 import refreshRoutes from "./routes/refresh.js";
@@ -28,12 +25,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/register", registerRoutes);
 app.use("/api/refresh", refreshRoutes);
 app.use("/api/logout", logoutRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.use(verifyJWT);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/foods", foodRoutes);
-app.use("/api/orders", orderRoutes);
 app.use("/api/profile", profileRoutes);
-app.use("/api/dashboard", dashboardRoutes);
 
 export default app;

@@ -18,7 +18,8 @@ const useRefreshToken = () => {
       const name = response?.data?.name;
       const verify_status = response?.data?.verify_status;
       const login_type = response?.data?.login_type;
-      return { ...prev, roles, accessToken, name, verify_status, login_type, user_email };
+      const emailToken = response?.data?.emailToken;
+      return { ...prev, roles, accessToken, name, verify_status, login_type, user_email, emailToken };
     });
     return response.data.accessToken;
   };

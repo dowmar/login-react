@@ -7,11 +7,13 @@ import useToggle from '../hooks/useToggle.jsx';
 import logo from '../assets/logo-birb.png';
 import { Alert, Button } from 'flowbite-react';
 import { ImFacebook2 } from "react-icons/im";
-import { FcGoogle } from "react-icons/fc";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import GoogleLogin from "./GoogleLogin";
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import { HiInformationCircle } from "react-icons/hi";
 
 const LOGIN_URL = '/auth';
+const LOGIN_SOCIAL_URL = '/auth/social';
 
 const Login = () => {
     const { setAuth } = useAuth();
@@ -40,7 +42,7 @@ const Login = () => {
         e.preventDefault();
         try {
             const response = await axios.post(LOGIN_URL,
-                JSON.stringify({ email, pwd }),
+                JSON.stringify({ email, pwd, login_type: "email_auth" }),
                 {
                     headers: { 'Content-Type': 'application/json' },
                     withCredentials: true
@@ -52,7 +54,17 @@ const Login = () => {
             const name = response?.data?.name;
             const verify_status = response?.data?.verify_status;
             const login_type = response?.data?.login_type;
-            setAuth({ user_email, pwd, roles, accessToken, name, verify_status, login_type });
+            const emailToken = response?.data?.emailToken;
+            setAuth({
+                user_email,
+                pwd: "",
+                roles,
+                accessToken,
+                name,
+                verify_status,
+                login_type,
+                emailToken
+            });
 
             reset();
             setPwd('');
@@ -72,12 +84,51 @@ const Login = () => {
         }
     }
 
-    const handleFacebookCallback = (response) => {
-        if (response?.status === "unknown") {
-            console.error('Sorry!', 'Something went wrong with Facebook login.');
-            return;
+    const handleFacebookCallback = async (account) => {
+        try {
+            if (account?.status === "unknown") {
+                throw new Error('Sorry!', 'Something went wrong with Facebook login.');
+            }
+            const results = await axios.post(LOGIN_SOCIAL_URL,
+                JSON.stringify({
+                    user: account.name,
+                    pwd: '',
+                    email: account.email,
+                    login_type: "meta_auth",
+                    img: account.picture.url
+                }),
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
+            const accessToken = results?.data?.accessToken;
+            const roles = results?.data?.roles;
+            const user_email = results?.data?.email;
+            const name = results?.data?.name;
+            const verify_status = results?.data?.verify_status;
+            const login_type = results?.data?.login_type;
+            const emailToken = results?.data?.emailToken;
+            setAuth({
+                user_email,
+                pwd,
+                roles,
+                accessToken,
+                name,
+                verify_status,
+                login_type,
+                emailToken
+            });
+
+            navigate(from, { replace: true });
+        } catch (error) {
+            if (!error?.response) {
+                setErrMsg('No Server Response');
+            } else if (error.response?.status === 409) {
+                setErrMsg('Email Already Registered');
+            } else {
+                setErrMsg('Registration Failed')
+            }
         }
-        console.log(response);
     };
 
     const handleDismiss = () => {
@@ -96,16 +147,17 @@ const Login = () => {
                 <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                     <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
                         {showAlert && (
-                            <Alert
-                                ref={errRef}
-                                color="failure"
-                                icon={HiInformationCircle}
-                                onDismiss={handleDismiss}
-                                rounded
-                                className={`${errMsg ? "block" : "hidden"} my-2 p-2`}
-                            >
-                                <span className="font-medium">{errMsg}</span>
-                            </Alert>
+                            <div ref={errRef}>
+                                <Alert
+                                    color="failure"
+                                    icon={HiInformationCircle}
+                                    onDismiss={handleDismiss}
+                                    rounded
+                                    className={`${errMsg ? "block" : "hidden"} my-2 p-2`}
+                                >
+                                    <span className="font-medium">{errMsg}</span>
+                                </Alert>
+                            </div>
                         )}
                         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                             Login
@@ -175,11 +227,11 @@ const Login = () => {
                                     )}
                                 />
 
-                                <Button color="light" className="w-1/2"
-                                >
-                                    <FcGoogle className="mr-2 h-5 w-5" />
-                                    Google
-                                </Button>
+                                <GoogleOAuthProvider clientId="459717985549-ei6f7tsenkqn6s70vec363n84ggd2ph2.apps.googleusercontent.com">
+                                    <GoogleLogin
+                                        login_url="http://localhost:5000/api/auth/social"
+                                    />
+                                </GoogleOAuthProvider>
 
                             </div>
 

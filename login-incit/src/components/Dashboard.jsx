@@ -1,17 +1,39 @@
 import { useState } from "react";
 import UserData from "./UserData";
+import useAuth from "../hooks/useAuth";
+// import VerifyEmail from "./VerifyEmail";
+import ResendEmail from "./ResendEmail";
 
 const Dashboard = () => {
-    // State to track which content to display
+    const { auth } = useAuth();
     const [activeContent, setActiveContent] = useState("overview");
 
-    // Function to render content based on active state
+
     const renderContent = () => {
         switch (activeContent) {
             case "overview":
-                return <UserData />;
+                return auth.verify_status == "verified" ? <UserData /> : <ResendEmail />
             case "docs":
-                return <div>Docs Content</div>;
+                return <div className="text-gray-900 dark:text-white">
+                    <p>
+                        {auth.name}
+                    </p>
+                    <p>
+                        {auth.user_email}
+                    </p>
+                    <p>
+                        {auth.accessToken}
+                    </p>
+                    <p>
+                        {auth.verify_status}
+                    </p>
+                    <p>
+                        {auth.login_type}
+                    </p>
+                    <p>
+                        {auth.emailToken}
+                    </p>
+                </div>;
             case "components":
                 return <div>Components Content</div>;
             case "help":

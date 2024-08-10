@@ -5,8 +5,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from "axios";
 
-
-const GoogleLogin = ({ sourcelink }) => {
+const GoogleRegister = ({ sourcelink }) => {
     const { setAuth } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -19,7 +18,7 @@ const GoogleLogin = ({ sourcelink }) => {
             if (!account.sub) {
                 throw new Error('Sorry!', 'Something went wrong with Google login.');
             }
-            const results = await axios.post("http://localhost:5000/api/auth/social",
+            const results = await axios.post("http://localhost:5000/api/register/social",
                 JSON.stringify({
                     user: username,
                     pwd: '',
@@ -93,4 +92,4 @@ const GoogleLogin = ({ sourcelink }) => {
     );
 }
 
-export default GoogleLogin
+export default GoogleRegister

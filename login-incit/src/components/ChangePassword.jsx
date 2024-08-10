@@ -47,9 +47,7 @@ const ChangePassword = () => {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${auth.accessToken}`,
                     },
-                    withCredentials: true
                 }
             );
             setOldPwd('');

@@ -16,9 +16,18 @@ export const registerUser = async (
   email,
   login_type,
   emailToken,
-  img
+  img,
+  verify_status
 ) => {
-  return await insertUser(user, pwd, email, login_type, emailToken, img);
+  return await insertUser(
+    user,
+    pwd,
+    email,
+    login_type,
+    emailToken,
+    img,
+    verify_status
+  );
 };
 
 export const checkDuplicateUser = async (email) => {

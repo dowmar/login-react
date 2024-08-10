@@ -19,21 +19,26 @@ const encryptToken = async (token, secret) => {
   return encrypted;
 };
 
-export const handleLogin = async (req, res) => {
+export const handleEmailLogin = async (req, res) => {
   const { email, pwd } = req.body;
-  console.log(req.body);
-  // if (login_type && login_type === "email_auth") {
-  if (!email || !pwd)
+  console.log("HANDLE EMAIL LOGIN", req.body);
+
+  if (!email || !pwd) {
     return res
       .status(400)
       .json({ message: "Email and password are required." });
-  // }
+  }
+
   const foundUser = await checkDuplicateUser(email);
-  if (!foundUser.length)
-    return res.status(401).json({ message: "User not registered" }); //Unauthorized
-  // evaluate password
-  console.log(foundUser[0]);
+  if (!foundUser.length) {
+    return res.status(401).json({ message: "User not registered" }); // Unauthorized
+  }
+
+  // Evaluate password
   const match = await bcrypt.compare(pwd, foundUser[0].pwd);
+  if (!match) {
+    return res.status(401).json({ message: "Password does not match" });
+  }
 
   const account = {
     name: foundUser[0].name,
@@ -41,10 +46,11 @@ export const handleLogin = async (req, res) => {
     login_type: foundUser[0].login_type,
     verify_status: foundUser[0].verify_status || "",
     img: foundUser[0].img || "",
+    emailToken: foundUser[0].email_token || "",
   };
 
   if (match) {
-    // create JWT
+    // Create JWT
     const accessToken = jwt.sign(
       { email: foundUser[0].email },
       process.env.ACCESS_TOKEN_SECRET,
@@ -55,17 +61,16 @@ export const handleLogin = async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "1h" }
     );
-    // attach refreshToken to database
+
+    // Attach refreshToken to database
     const encryptedToken = await encryptToken(
       refreshToken,
       process.env.ENCRYPTION_SECRET
     );
 
-    // TODO change date
     const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getMinutes() + 5);
-    const storeToken = await insertToken(email, encryptedToken, expiryDate);
-    console.log("storeToken", storeToken);
+    expiryDate.setMinutes(expiryDate.getMinutes() + 5);
+    await insertToken(email, encryptedToken, expiryDate);
 
     res.cookie("jwt", encryptedToken, {
       httpOnly: true,
@@ -73,14 +78,13 @@ export const handleLogin = async (req, res) => {
       secure: true,
       maxAge: 1 * 60 * 60 * 1000,
     });
-    // TODO create roles
+
+    // Create roles
     const roles = ["user", "admin"];
 
     // Add logging
-    const addLogging = await insertUserLoggings(email, "login");
-    if (addLogging) {
-      console.log("log added", addLogging);
-    }
+    await insertUserLoggings(email, "login");
+
     res.json({
       accessToken,
       roles,
@@ -89,8 +93,78 @@ export const handleLogin = async (req, res) => {
       verify_status: account.verify_status,
       img: account.img,
       login_type: account.login_type,
+      emailToken: account.emailToken,
     });
-  } else {
-    res.status(401).json({ message: "password not match" });
   }
+};
+
+export const handleSocialLogin = async (req, res) => {
+  const { email, login_type } = req.body;
+  console.log("HANDLE SOCIAL LOGIN", req.body);
+
+  if (!email || !login_type) {
+    return res
+      .status(400)
+      .json({ message: "Email and login type are required." });
+  }
+
+  const foundUser = await checkDuplicateUser(email);
+  if (!foundUser.length) {
+    return res.status(401).json({ message: "User not registered" }); // Unauthorized
+  }
+
+  const account = {
+    name: foundUser[0].name,
+    email: foundUser[0].email,
+    login_type: foundUser[0].login_type,
+    verify_status: foundUser[0].verify_status || "",
+    img: foundUser[0].img || "",
+    emailToken: foundUser[0].email_token || "",
+  };
+
+  // Create JWT
+  const accessToken = jwt.sign(
+    { email: foundUser[0].email },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: "300s" }
+  );
+  const refreshToken = jwt.sign(
+    { email: foundUser[0].email },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: "1h" }
+  );
+
+  // Attach refreshToken to database
+  const encryptedToken = await encryptToken(
+    refreshToken,
+    process.env.ENCRYPTION_SECRET
+  );
+
+  const expiryDate = new Date();
+  expiryDate.setMinutes(expiryDate.getMinutes() + 5);
+  await insertToken(email, encryptedToken, expiryDate);
+
+  res.cookie("jwt", encryptedToken, {
+    httpOnly: true,
+    sameSite: "None",
+    secure: true,
+    maxAge: 1 * 60 * 60 * 1000,
+  });
+
+  // Create roles
+  const roles = ["user", "admin"];
+
+  // Add logging
+  await insertUserLoggings(email, "login");
+
+  res.json({
+    accessToken,
+    roles,
+    email: account.email,
+    name: account.name,
+    verify_status: account.verify_status,
+    img: account.img,
+    login_type: account.login_type,
+    emailToken: account.emailToken,
+  });
 };

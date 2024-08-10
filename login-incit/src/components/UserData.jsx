@@ -19,7 +19,6 @@ const UserData = () => {
         axios.get(LOGS_URL, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${auth.accessToken}`,
             },
         })
             .then(response => {
@@ -29,7 +28,6 @@ const UserData = () => {
         axios.get(STATS_URL, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${auth.accessToken}`,
             },
         })
             .then(response => {

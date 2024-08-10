@@ -1,8 +1,12 @@
 import express from "express";
-import { handleLogin } from "../controllers/authController.js";
+import {
+  handleEmailLogin,
+  handleSocialLogin,
+} from "../controllers/authController.js";
 
 const router = express.Router();
 
-router.post("/", handleLogin);
+router.post("/", handleEmailLogin);
+router.post("/social", handleSocialLogin);
 
 export default router;

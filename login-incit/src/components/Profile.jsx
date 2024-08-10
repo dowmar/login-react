@@ -1,22 +1,21 @@
 import useAuth from '../hooks/useAuth';
-import { Button } from 'flowbite-react';
+import { Alert, Button } from 'flowbite-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useRef, useState } from "react";
 import axiosPrivate from '../api/axios';
 import axios from '../api/axios';
+import { HiInformationCircle } from "react-icons/hi";
 
 const EDIT_URL = '/profile/edit-name'
 
 const Profile = () => {
-    const { auth } = useAuth();
+    const { auth, setAuth } = useAuth();
     const navigate = useNavigate();
     const errRef = useRef();
-    const email = auth.user_email;
-    // let isMounted = true;
-    const controller = new AbortController();
 
     const [name, setName] = useState('');
     const [errMsg, setErrMsg] = useState('');
+    const [showAlert, setShowAlert] = useState(true);
 
 
     const handleSubmit = async (e) => {
@@ -27,29 +26,25 @@ const Profile = () => {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${auth.accessToken}`,
                     },
-                    withCredentials: true
                 }
             );
             setName('');
             console.log(response);
-            navigate(0);
+            setErrMsg("Name Sucessfully Changed")
+            navigate(0, 5000);
+            // setName(response.data.name)
         } catch (err) {
             if (!err?.response) {
-                console.log(err);
                 setErrMsg('No Server Response');
-            } else if (err.response?.status === 400) {
-                setErrMsg('Missing Username or Password');
-            } else if (err.response?.status === 401) {
-                setErrMsg('Unauthorized');
-            } else {
-                setErrMsg('Login Failed');
             }
             errRef.current.focus();
         }
     }
 
+    const handleDismiss = () => {
+        setShowAlert(false);
+    };
 
 
     return (
@@ -70,7 +65,18 @@ const Profile = () => {
                             </h2>
                             <form className="mt-4 space-y-4 lg:mt-5 md:space-y-5">
                                 <div>
-                                    <p ref={errRef} className={`my-2 p-2 text-red-600 ${errMsg ? "block" : "hidden"}`} aria-live="assertive">{errMsg}</p>
+                                    {showAlert && (
+                                        <Alert
+                                            ref={errRef}
+                                            color="success"
+                                            icon={HiInformationCircle}
+                                            onDismiss={handleDismiss}
+                                            rounded
+                                            className={`${errMsg ? "block" : "hidden"} my-2 p-2`}
+                                        >
+                                            <span className="font-medium">{errMsg}</span>
+                                        </Alert>
+                                    )}
                                     <label
                                         htmlFor="username"
                                         className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"

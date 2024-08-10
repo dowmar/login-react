@@ -4,36 +4,40 @@ import { useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../api/axios";
 import logo from '../assets/logo-birb.png';
+import useAuth from "../hooks/useAuth";
 
 
-const VERIFY_URL = '/register/verify-email';
+const RESEND_URL = '/register/resend-email';
 
-const VerifyEmail = () => {
+const ResendEmail = () => {
     const errRef = useRef();
+    const { auth } = useAuth();
 
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state?.from?.pathname || "/login";
-    const params = new URLSearchParams(location.search);
-    const emailToken = params.get("emailToken");
+    const from = location.state?.from?.pathname || "/";
     const [errMsg, setErrMsg] = useState('');
     const [showAlert, setShowAlert] = useState(true);
 
     const handleConfirm = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.patch(VERIFY_URL,
-                JSON.stringify({ emailToken }),
+            const response = await axios.post(RESEND_URL,
+                JSON.stringify(
+                    {
+                        name: auth.name,
+                        email: auth.user_email,
+                        emailToken: auth.emailToken
+                    }),
                 {
                     headers: { 'Content-Type': 'application/json' },
+
                 }
             );
             console.log(response);
-            setErrMsg("Email verified successfully!");
-            setTimeout(() => {
-                navigate(from, { replace: true });
-            }, 3000);
+            setErrMsg("Check your inbox / spam");
         } catch (err) {
+            console.log(err.response);
             setErrMsg(
                 err.response?.data?.message || "Verification failed. Please try again."
             );
@@ -57,7 +61,7 @@ const VerifyEmail = () => {
                         {showAlert && (
                             <Alert
                                 ref={errRef}
-                                color="success"
+                                color="failure"
                                 icon={HiInformationCircle}
                                 onDismiss={handleDismiss}
                                 rounded
@@ -77,7 +81,7 @@ const VerifyEmail = () => {
                                 className="w-full"
                                 onClick={handleConfirm}
                             >
-                                Confirm Verify Email
+                                Resend Verification
                             </Button>
 
                         </form>
@@ -90,4 +94,4 @@ const VerifyEmail = () => {
     )
 }
 
-export default VerifyEmail
+export default ResendEmail

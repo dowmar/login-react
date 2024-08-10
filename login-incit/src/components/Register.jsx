@@ -1,23 +1,31 @@
 import { ImFacebook2 } from "react-icons/im";
-import { Button } from "flowbite-react";
+import { Alert, Button } from "flowbite-react";
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 import logo from '../assets/logo-birb.png';
 import { faCheck, faTimes, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useRef, useState } from "react";
 import axios from '../api/axios';
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import GoogleLogin from "./GoogleLogin";
+import { HiInformationCircle } from "react-icons/hi";
+import useAuth from '../hooks/useAuth.jsx';
+import GoogleRegister from "./GoogleRegister.jsx";
 
 const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 const EMAIL_REGEX = /^((?!\.)[\w\-_.]*[^.])(@\w+)(\.\w+(\.\w+)?[^.\W])$/;
 const REGISTER_URL = '/register';
+const REGISTER_SOCIAL = '/register/social';
 
 const Register = () => {
+    const { setAuth } = useAuth();
     const userRef = useRef();
     const errRef = useRef();
+
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/";
 
     const [user, setUser] = useState('');
     const [validName, setValidName] = useState(false);
@@ -37,6 +45,7 @@ const Register = () => {
 
     const [errMsg, setErrMsg] = useState('');
     const [success, setSuccess] = useState(false);
+    const [showAlert, setShowAlert] = useState(true);
 
 
     useEffect(() => {
@@ -45,22 +54,22 @@ const Register = () => {
 
     useEffect(() => {
         const result = USER_REGEX.test(user);
-        console.log(result);
-        console.log(user);
+        // console.log(result);
+        // console.log(user);
         setValidName(result);
     }, [user]);
 
     useEffect(() => {
         const result = EMAIL_REGEX.test(email);
-        console.log(result);
-        console.log(email);
+        // console.log(result);
+        // console.log(email);
         setValidEmail(result);
     }, [email]);
 
     useEffect(() => {
         const result = PWD_REGEX.test(pwd);
-        console.log(result);
-        console.log(pwd);
+        // console.log(result);
+        // console.log(pwd);
         setValidPwd(result);
 
         const match = pwd === matchPwd;
@@ -85,17 +94,33 @@ const Register = () => {
                 JSON.stringify({ user, pwd, email, login_type, img: '' }),
                 {
                     headers: { 'Content-Type': 'application/json' },
-                    // withCredentials: true
                 }
             );
-            console.log(response?.data);
-            console.log(response?.accessToken);
-            console.log(JSON.stringify(response))
-            setSuccess(true);
+            // console.log(response?.data);
+            // console.log(response?.accessToken);
+            console.log('register response', JSON.stringify(response))
             setUser('');
             setEmail('');
             setPwd('');
             setMatchPwd('');
+            const accessToken = response?.data?.accessToken;
+            const roles = response?.data?.roles;
+            const user_email = response?.data?.email;
+            const name = response?.data?.name;
+            const verify_status = response?.data?.verify_status;
+            login_type = response?.data?.login_type;
+            const emailToken = response?.data?.emailToken;
+            setAuth({
+                user_email,
+                pwd,
+                roles,
+                accessToken,
+                name,
+                verify_status,
+                login_type,
+                emailToken
+            });
+            navigate(from, { replace: true });
         } catch (err) {
             if (!err?.response) {
                 setErrMsg('No Server Response');
@@ -104,7 +129,7 @@ const Register = () => {
             } else {
                 setErrMsg('Registration Failed')
             }
-            errRef.current.focus();
+            // errRef.current.focus();
         }
     }
 
@@ -114,7 +139,7 @@ const Register = () => {
             if (account?.status === "unknown") {
                 throw new Error('Sorry!', 'Something went wrong with Facebook login.');
             }
-            const results = await axios.post(REGISTER_URL,
+            const results = await axios.post(REGISTER_SOCIAL,
                 JSON.stringify({
                     user: account.name,
                     pwd: '',
@@ -126,11 +151,21 @@ const Register = () => {
                     headers: { 'Content-Type': 'application/json' },
                 }
             );
-            console.log(account);
-            console.log(results);
+            console.log("register fb", results);
+            navigate(from, { replace: true });
         } catch (error) {
-            return error
+            if (!error?.response) {
+                setErrMsg('No Server Response');
+            } else if (error.response?.status === 409) {
+                setErrMsg('Email Already Registered');
+            } else {
+                setErrMsg('Registration Failed')
+            }
         }
+    };
+
+    const handleDismiss = () => {
+        setShowAlert(false);
     };
 
     return (
@@ -151,7 +186,18 @@ const Register = () => {
                         </a>
                         <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                             <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-                                <p ref={errRef} className={`my-2 p-2 text-red-600 ${errMsg ? "block" : "hidden"}`} aria-live="assertive">{errMsg}</p>
+                                {showAlert && (
+                                    <Alert
+                                        ref={errRef}
+                                        color="failure"
+                                        icon={HiInformationCircle}
+                                        onDismiss={handleDismiss}
+                                        rounded
+                                        className={`${errMsg ? "block" : "hidden"} my-2 p-2`}
+                                    >
+                                        <span className="font-medium">{errMsg}</span>
+                                    </Alert>
+                                )}
                                 <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                                     Create an account
                                 </h1>
@@ -355,7 +401,7 @@ const Register = () => {
                                             )}
                                         />
                                         <GoogleOAuthProvider clientId="459717985549-ei6f7tsenkqn6s70vec363n84ggd2ph2.apps.googleusercontent.com">
-                                            <GoogleLogin />
+                                            <GoogleRegister />
                                         </GoogleOAuthProvider>
 
                                     </div>
