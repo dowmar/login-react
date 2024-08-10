@@ -4,10 +4,19 @@ import {
   insertRefreshToken,
   findUserByToken,
   deleteRefreshTokenByToken,
+  findEmailToken,
+  updateEmailToken,
 } from "../models/register.js";
 
-export const registerUser = async (user, pwd, email, login_type) => {
-  return await insertUser(user, pwd, email, login_type);
+export const registerUser = async (
+  user,
+  pwd,
+  email,
+  login_type,
+  emailToken,
+  img
+) => {
+  return await insertUser(user, pwd, email, login_type, emailToken, img);
 };
 
 export const checkDuplicateUser = async (email) => {
@@ -26,4 +35,11 @@ export const findUserByRefresh = async (token) => {
 
 export const deleteRefreshToken = async (token) => {
   return await deleteRefreshTokenByToken(token);
+};
+
+export const checkEmailToken = async (emailToken) => {
+  return await findEmailToken(emailToken);
+};
+export const updateEmailTokens = async (email) => {
+  return await updateEmailToken(email);
 };

@@ -21,6 +21,7 @@ const encryptToken = async (token, secret) => {
 
 export const handleLogin = async (req, res) => {
   const { email, pwd } = req.body;
+  console.log(req.body);
   // if (login_type && login_type === "email_auth") {
   if (!email || !pwd)
     return res
@@ -28,20 +29,33 @@ export const handleLogin = async (req, res) => {
       .json({ message: "Email and password are required." });
   // }
   const foundUser = await checkDuplicateUser(email);
-  if (!foundUser.length) return res.sendStatus(401); //Unauthorized
+  if (!foundUser.length)
+    return res.status(401).json({ message: "User not found" }); //Unauthorized
   // evaluate password
+  console.log(foundUser[0]);
   const match = await bcrypt.compare(pwd, foundUser[0].pwd);
+
+  console.log("apakah match", match);
+
+  const account = {
+    name: foundUser[0].name,
+    email: foundUser[0].email,
+    login_type: foundUser[0].login_type,
+    verify_status: foundUser[0].verify_status || "",
+    img: foundUser[0].img || "",
+  };
+
   if (match) {
     // create JWT
     const accessToken = jwt.sign(
       { email: foundUser[0].email },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "10s" }
+      { expiresIn: "300s" }
     );
     const refreshToken = jwt.sign(
       { email: foundUser[0].email },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "15s" }
+      { expiresIn: "1h" }
     );
     // attach refreshToken to database
     const encryptedToken = await encryptToken(
@@ -59,12 +73,20 @@ export const handleLogin = async (req, res) => {
       httpOnly: true,
       sameSite: "None",
       secure: true,
-      maxAge: 5 * 60 * 1000,
+      maxAge: 1 * 60 * 60 * 1000,
     });
     // TODO create roles
     const roles = ["user", "admin"];
-    res.json({ accessToken, roles });
+    res.json({
+      accessToken,
+      roles,
+      email: account.email,
+      name: account.name,
+      verify_status: account.verify_status,
+      img: account.img,
+      login_type: account.login_type,
+    });
   } else {
-    res.sendStatus(401);
+    res.status(401).json({ message: "password not match" });
   }
 };

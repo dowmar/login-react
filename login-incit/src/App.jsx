@@ -10,6 +10,8 @@ import { Routes, Route } from "react-router-dom"
 import LinkPage from "./components/LinkPage"
 import Unauthorized from "./components/Unauthorized"
 import PersistLogin from "./components/PersistLogin"
+import VerifyEmail from "./components/VerifyEmail"
+import Profile from "./components/Profile"
 
 // const ROLES = {
 //   'User': 2001,
@@ -25,6 +27,7 @@ function App() {
         {/* public routes */}
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="verify-email" element={<VerifyEmail />} />
         <Route path="linkpage" element={<LinkPage />} />
         <Route path="unauthorized" element={<Unauthorized />} />
 
@@ -32,9 +35,11 @@ function App() {
         <Route element={<PersistLogin />}>
           <Route element={<RequireAuth allowedRoles={["user"]} />}>
             <Route path="/" element={<Home />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
           <Route element={<RequireAuth allowedRoles={["admin"]} />}>
             <Route path="admin" element={<Admin />} />
+            <Route path="lounge" element={<Admin />} />
           </Route>
         </Route>
 
@@ -42,14 +47,7 @@ function App() {
         <Route path="*" element={<Missing />} />
       </Route>
     </Routes>
-    // <>
-    //   <div>
-    //     {/* <Register /> */}
-    //     <Login />
-    //   </div>
-    //   {/* <main className="App">
-    //   </main> */}
-    // </>
+
   )
 }
 
