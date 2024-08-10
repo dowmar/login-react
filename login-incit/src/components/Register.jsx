@@ -379,7 +379,7 @@ const Register = () => {
                                     </div>
                                     <div className="flex space-x-1">
                                         <FacebookLogin
-                                            appId="3780468242231803"  // Your Facebook App ID
+                                            appId=""  // Your Facebook App ID
                                             autoLoad={false}
                                             fields="name,email,picture"
                                             callback={handleFacebookCallback}
@@ -387,7 +387,7 @@ const Register = () => {
                                                 <Button onClick={renderProps.onClick} color="light" className="w-1/2"><ImFacebook2 className="mr-2 h-5 w-5" />Facebook</Button>
                                             )}
                                         />
-                                        <GoogleOAuthProvider clientId="459717985549-ei6f7tsenkqn6s70vec363n84ggd2ph2.apps.googleusercontent.com">
+                                        <GoogleOAuthProvider clientId="">
                                             <GoogleLogin />
                                         </GoogleOAuthProvider>
 
